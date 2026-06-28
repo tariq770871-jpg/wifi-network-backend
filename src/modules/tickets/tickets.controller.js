@@ -1,4 +1,4 @@
-const { query } = require('../../shared/database');
+const { query } = require('../../shared/db');
 
 const ticketsController = {
   getAll: async (req, res) => {
