@@ -129,7 +129,7 @@ const complete = async (req, res) => {
         const { id } = req.params;
         const { notes } = req.body;
         const result = await query(
-            'UPDATE tickets SET status = $1, completed_at = NOW(), updated_at = NOW(), description = COALESCE(description, '') || $2 WHERE id = $3 RETURNING *',
+            'UPDATE tickets SET status = $1, completed_at = NOW(), updated_at = NOW(), description = COALESCE(description, '''') || $2 WHERE id = $3 RETURNING *',
             ['completed', notes ? '\n\nملاحظات الإكمال: ' + notes : '', id]
         );
         success(res, result.rows[0], 'تم إكمال البلاغ بنجاح');
