@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
 require('dotenv').config();
@@ -20,17 +19,19 @@ const { devicesRoutes } = require('./modules/devices');
 
 const app = express();
 
-// Security middleware
-app.use(helmet());
-app.use(cors({
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
-    credentials: true
-}));
+// CORS - allow all origins for development, restrict in production
+const allowedOrigins = process.env.ALLOWED_ORIGINS;
+if (allowedOrigins && allowedOrigins.trim() !== '') {
+  const origins = allowedOrigins.split(',').map(o => o.trim()).filter(Boolean);
+  app.use(cors({ origin: origins, credentials: true }));
+} else {
+  app.use(cors({ origin: true, credentials: true }));
+}
 
 // Rate limiting
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000,
+    max: 200
 });
 app.use(limiter);
 
@@ -59,7 +60,7 @@ app.use('/api/devices', devicesRoutes);
 
 // 404 handler
 app.use((req, res) => {
-    res.status(404).json({ error: 'المسار غير موجود' });
+    res.status(404).json({ success: false, error: 'المسار غير موجود' });
 });
 
 // Error handler
@@ -68,8 +69,8 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 module.exports = app;
